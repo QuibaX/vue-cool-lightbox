@@ -1,20 +1,20 @@
 <template>
   <transition name="cool-lightbox-modal">
-    <div class="cool-lightbox" 
-      v-bind:class="lightboxClasses" 
-      v-if="isVisible" 
+    <div class="cool-lightbox"
+      v-bind:class="lightboxClasses"
+      v-if="isVisible"
       @click="closeModal"
       v-bind:style="lightboxStyles">
 
       <div v-if="gallery" class="cool-lightbox-thumbs">
         <div class="cool-lightbox-thumbs__list">
-          <button 
+          <button
             type="button"
             v-for="(item, itemIndex) in items"
             :key="itemIndex"
-            :class="{ 
+            :class="{
               active: itemIndex === imgIndex,
-              'is-video': isVideo(getItemSrc(itemIndex)) 
+              'is-video': isVideo(getItemSrc(itemIndex))
             }"
             @click="imgIndex = itemIndex"
             class="cool-lightbox__thumb">
@@ -28,7 +28,7 @@
         </div>
       </div>
 
-      <div class="cool-lightbox__inner" 
+      <div class="cool-lightbox__inner"
         :style="innerStyles">
         <div class="cool-lightbox__progressbar" :style="stylesInterval"></div>
 
@@ -54,13 +54,13 @@
         <div class="cool-lightbox__wrapper">
           <div class="cool-lightbox__slide">
             <transition name="cool-lightbox-slide-change" mode="out-in">
-              <div v-if="!videoUrl" key="image" :style="imgWrapperStyle" class="cool-lightbox__slide__img">
+              <div v-if="!videoUrl && !isHtml" key="image" :style="imgWrapperStyle" class="cool-lightbox__slide__img">
                 <transition name="cool-lightbox-slide-change" mode="out-in">
-                <img 
-                  :src="itemSrc" 
+                <img
+                  :src="itemSrc"
                   :key="imgIndex"
                   draggable="false"
-                  
+
                   @click="zoomImage"
                   @load="imageLoaded"
                   @mousedown="handleMouseDown($event)"
@@ -72,22 +72,28 @@
                 <div v-show="imageLoading" class="cool-lightbox-loading"></div>
               </div>
               <!--/imgs-slide-->
-            
 
-              <div v-else key="video" class="cool-lightbox__iframe">
+
+              <div v-else-if="!isHtml" key="video" class="cool-lightbox__iframe">
                 <transition name="cool-lightbox-slide-change" mode="out-in">
-                  <iframe class="cool-lightbox-video" :src="videoUrl" v-if="!isMp4" :style="aspectRatioVideo" :key="videoUrl" frameborder="0" 
-                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
+                  <iframe class="cool-lightbox-video" :src="videoUrl" v-if="!isMp4" :style="aspectRatioVideo" :key="videoUrl" frameborder="0"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen>
                   </iframe>
 
                   <video class="cool-lightbox-video" v-if="isMp4" :style="aspectRatioVideo" :key="videoUrl" controls="" controlslist="nodownload" poster="">
                     <source :src="videoUrl" type="video/mp4">
                     Sorry, your browser doesn't support embedded videos
-                  </video> 
+                  </video>
                 </transition>
               </div>
               <!--/cool-lightbox__iframe-->
+
+              <div v-else key="html" class="cool-lightbox__iframe">
+                <transition name="cool-lightbox-slide-change" mode="out-in">
+                  <div class="html-wrapper" v-html="itemSrc"></div>
+                </transition>
+              </div>
 
             </transition>
           </div>
@@ -107,7 +113,7 @@
           </div>
           <!--/cool-lightbox-caption-->
         </transition>
-        
+
         <div class="cool-lightbox-toolbar" :class="buttonsClasses">
           <button type="button" v-if="this.slideshow && items.length > 1" class="cool-lightbox-toolbar__btn" @click="togglePlaySlideshow">
             <svg xmlns="http://www.w3.org/2000/svg" v-if="!isPlayingSlideShow" viewBox="0 0 24 24">
@@ -120,9 +126,9 @@
 
           <button type="button" @click="showThumbs = !showThumbs" v-if="items.length > 1 && gallery" class="cool-lightbox-toolbar__btn">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M14.59 14.59h3.76v3.76h-3.76v-3.76zm-4.47 
-              0h3.76v3.76h-3.76v-3.76zm-4.47 0h3.76v3.76H5.65v-3.76zm8.94-4.47h3.76v3.76h-3.76v-3.76zm-4.47 
-              0h3.76v3.76h-3.76v-3.76zm-4.47 0h3.76v3.76H5.65v-3.76zm8.94-4.47h3.76v3.76h-3.76V5.65zm-4.47 
+              <path d="M14.59 14.59h3.76v3.76h-3.76v-3.76zm-4.47
+              0h3.76v3.76h-3.76v-3.76zm-4.47 0h3.76v3.76H5.65v-3.76zm8.94-4.47h3.76v3.76h-3.76v-3.76zm-4.47
+              0h3.76v3.76h-3.76v-3.76zm-4.47 0h3.76v3.76H5.65v-3.76zm8.94-4.47h3.76v3.76h-3.76V5.65zm-4.47
               0h3.76v3.76h-3.76V5.65zm-4.47 0h3.76v3.76H5.65V5.65z">
               </path>
             </svg>
@@ -215,12 +221,12 @@ export default {
       type: Number,
       default: 3000,
     },
-    
+
     srcName: {
       type: String,
       default: 'src',
     },
-    
+
     srcThumb: {
       type: String,
       default: 'thumb',
@@ -254,7 +260,7 @@ export default {
 
         // add events listener
         window.addEventListener('keydown', this.eventListener)
-        
+
         // only in mobile
         if(window.innerWidth < 700) {
 
@@ -283,8 +289,8 @@ export default {
         window.removeEventListener('click', this.showButtons)
       }
 
-    }, 
-    
+    },
+
     imgIndex(prev, val) {
       const thisContext = this
 
@@ -320,7 +326,7 @@ export default {
           this.setAspectRatioVideo();
         }
       })
-    }, 
+    },
   },
 
   mounted() {
@@ -363,7 +369,7 @@ export default {
 
       return itemUrl
     },
-    
+
     // get item src
     getItemSrc(imgIndex) {
       if(imgIndex === null) {
@@ -377,7 +383,7 @@ export default {
 
       return item
     },
-    
+
     getItemThumb(imgIndex) {
       if(imgIndex === null) {
         return false
@@ -386,7 +392,7 @@ export default {
       const item = this.items[imgIndex]
       if(this.checkIfIsObject(imgIndex)) {
         return item[this.srcThumb]
-      } 
+      }
 
       if(this.isVideo(item)) {
         return false
@@ -429,7 +435,7 @@ export default {
       const self = this
       this.progressWidth = 100;
       this.intervalProgress = setInterval(frame, this.slideshowDuration + 90);
-      
+
       self.stylesInterval = {
         'transform': 'scaleX(1)',
         'background': this.slideshowColorBar,
@@ -440,7 +446,7 @@ export default {
           'transform': 'scaleX(0)',
           'transition': 'none',
         }
-        
+
         self.onNextClick(true)
         if(!self.hasNext && !self.loop) {
           self.stopSlideShow()
@@ -454,7 +460,7 @@ export default {
           }, 50)
         }
       }
-    }, 
+    },
 
     // show buttons event
     showButtons(event) {
@@ -524,7 +530,7 @@ export default {
 
       // Is zooming check
       if(isZooming) {
-        if(!this.isDraging) { 
+        if(!this.isDraging) {
           this.isZooming = false
         }
       } else {
@@ -546,7 +552,7 @@ export default {
 
       } else {
 
-        // show buttons 
+        // show buttons
         this.buttonsVisible = true
         this.resetZoom()
       }
@@ -560,7 +566,7 @@ export default {
       this.canZoom = false
       this.isZooming = false
       this.transition = 'all .3s ease'
-      
+
       if(window.innerWidth >= 700) {
         this.buttonsVisible = true
       }
@@ -574,11 +580,11 @@ export default {
       if(this.videoUrl) {
         return this.canZoom = false
       }
-        
+
       // image width and height
       const img = new Image()
       img.src = this.itemSrc
-      
+
       const coolLightboxWrapper = document.getElementsByClassName('cool-lightbox');
       let computedStyle = getComputedStyle(coolLightboxWrapper[0])
       let heightWrapperImage = coolLightboxWrapper[0].clientHeight;  // height with padding
@@ -586,7 +592,7 @@ export default {
       img.onload = function() {
         const width = this.width
         const height = this.height
-        
+
         if(height > heightWrapperImage) {
           thisContext.canZoom = true
 
@@ -595,7 +601,7 @@ export default {
             width: width+'px'
           }
 
-        } else { 
+        } else {
           thisContext.canZoom = false
         }
       }
@@ -615,7 +621,7 @@ export default {
         this.aspectRatioVideo.width = width+'px'
 
       } else {
-        
+
         setTimeout(function() {
           let height = el[0].clientHeight
           let width = (height/9)*16;
@@ -682,13 +688,13 @@ export default {
       this.$emit('on-change', index)
     },
 
-    // caption size 
+    // caption size
     addCaptionPadding() {
       if(this.isObject && (this.items[this.imgIndex].title || this.items[this.imgIndex].descripcion)) {
         const el = document.getElementsByClassName('cool-lightbox-caption');
         if(el.length > 0) {
           this.paddingBottom = el[0].offsetHeight
-        } 
+        }
       } else {
         this.paddingBottom = 60
       }
@@ -703,10 +709,10 @@ export default {
 
       return false
     },
-    
+
     // getYoutube ID
     getYoutubeID(url) {
-      
+
       // youtube data
       const youtubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
       const ytId = (url.match(youtubeRegex)) ? RegExp.$1 : false;
@@ -734,7 +740,7 @@ export default {
 
     // vimeo ID
     getVimeoID(url) {
-      
+
       // if is vimeo video
       const result = url.match(/(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i);
       if(result !== null) {
@@ -799,7 +805,7 @@ export default {
 
     // lightbox styles
     lightboxStyles() {
-      return { 
+      return {
         'z-index': this.zIndex,
         'background-color': this.overlayColor,
       }
@@ -834,7 +840,7 @@ export default {
       return false;
     },
 
-    // get video url 
+    // get video url
     videoUrl() {
       if(this.imgIndex === null) {
         return false
@@ -843,15 +849,15 @@ export default {
       var urlReturn
       const url = this.itemSrc
 
-      urlReturn = this.getYoutubeUrl(url) 
+      urlReturn = this.getYoutubeUrl(url)
       if(urlReturn) {
         return urlReturn
       }
-      
+
       urlReturn = this.getVimeoUrl(url)
       if(urlReturn) {
         return urlReturn
-      } 
+      }
 
       if(this.isMp4) {
         return url
@@ -896,10 +902,10 @@ export default {
       return (this.imgIndex + 1 < this.items.length)
     },
 
-    // check if the slide has previous element 
+    // check if the slide has previous element
     hasPrevious() {
       return (this.imgIndex - 1 >= 0)
-    },  
+    },
 
     // Images wrapper styles to use drag and zoom
     imgWrapperStyle() {
@@ -909,6 +915,10 @@ export default {
         left: `50%`,
         transition: this.transition,
       }
+    },
+
+    isHtml() {
+      return /<\/?[a-z][\s\S]*>/i.test(this.itemSrc.toString());
     }
   }
 };
@@ -928,19 +938,19 @@ $breakpoints: (
 
   // If the breakpoint exists in the map.
 	@if map-has-key($breakpoints, $breakpoint) {
-	
+
     // Get the breakpoint value.
     $breakpoint-value: map-get($breakpoints, $breakpoint);
-	
+
 	  //Build the media query
 		@media (min-width: $breakpoint-value) {
 			@content;
 		}
-	} 
+	}
 }
 
 .cool-lightbox {
-  position: fixed; 
+  position: fixed;
   left: 0;
   bottom: 0;
   top: 0;
@@ -1100,7 +1110,7 @@ $breakpoints: (
         cursor: move; /* fallback if grab cursor is unsupported */
         cursor: grab;
         cursor: -moz-grab;
-        cursor: -webkit-grab; 
+        cursor: -webkit-grab;
       }
     }
     .cool-lightbox-caption {

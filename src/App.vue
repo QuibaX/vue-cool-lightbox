@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <CoolLightBox 
-      :items="items" 
+    <CoolLightBox
+      :items="items"
       :index="index"
       @close="index = null">
     </CoolLightBox>
@@ -39,6 +39,9 @@ export default {
         },
         {
           src: 'https://www.youtube.com/watch?v=NvEGPTdNlS0'
+        },
+        {
+          src: "<h1>Yeah this works</h1>"
         }
       ],
       index: null
